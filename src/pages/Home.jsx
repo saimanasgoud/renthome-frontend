@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import "../styles/home.css";
+import "../styles/Home.css";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer.jsx";
 import { useLocation } from "react-router-dom";
+
 export default function Home() {
 
   const [loaded, setLoaded] = useState(false);
@@ -52,10 +53,10 @@ const filteredHomes = properties.filter((home) => {
 
   // 🔥 STRICT LOCATION FILTER
 const matchesLocation =
-  parsed.pincode?.includes(searchText) &&
-  parsed.city?.toLowerCase().includes(searchText);
-    parsed.selectedArea?.toLowerCase().includes(searchText);
-
+  (parsed.pincode?.includes(searchText) ||
+   parsed.city?.toLowerCase().includes(searchText) ||
+   parsed.selectedArea?.toLowerCase().includes(searchText));
+   
   return matchesLocation;
 });
 
