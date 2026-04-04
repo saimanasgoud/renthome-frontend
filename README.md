@@ -96,13 +96,11 @@ npm run build
 
 (Add screenshots here after deployment)
 
----
 
 ## 🔗 Backend Repository
 
 👉 https://github.com/your-username/renthome-backend
 
----
 
 ## 👨‍💻 Author
 
@@ -111,7 +109,6 @@ npm run build
 * Full Stack Developer
 * Java | React | Spring Boot
 
----
 
 ## 📜 License
 
