@@ -11,13 +11,13 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setDebouncedSearch(search);
-  }, 300);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
 
-  return () => clearTimeout(timer);
-}, [search]);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     setTimeout(() => setLoaded(true), 200);
@@ -25,43 +25,47 @@ useEffect(() => {
 
   const [properties, setProperties] = useState([]);
 
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/forms/all`)
-      .then(res => res.json())
-      .then(data => setProperties(data))
-      .catch(err => console.error(err));
-  }, []);
+useEffect(() => {
+  fetch(`${import.meta.env.VITE_API_URL}/api/forms/all`)
+    .then(res => res.json())
+    .then(data => setProperties(data || []))
+    .catch(err => {
+      console.error(err);
+      setProperties([]);   // 🔥 IMPORTANT
+    });
+}, []);
 
   const location = useLocation();
 
-useEffect(() => {
-  if (location.state?.pincode) {
-    setSearch(location.state.pincode);
-  }
-}, []);
+  useEffect(() => {
+    if (location.state?.pincode) {
+      setSearch(location.state.pincode);
+    }
+  }, []);
 
-const filteredHomes = properties.filter((home) => {
-  let parsed = {};
+  const filteredHomes = (properties || []).filter((home) => {
+    let parsed = {};
 
-  try {
-    parsed = JSON.parse(home.formJson || "{}");
-  } catch {
-    parsed = {};
-  }
+    try {
+      parsed = JSON.parse(home.formJson || "{}");
+    } catch {
+      parsed = {};
+    }
 
-  const searchText = debouncedSearch.toLowerCase();
+    const searchText = debouncedSearch.toLowerCase();
 
-  // 🔥 STRICT LOCATION FILTER
-const matchesLocation =
-  (parsed.pincode?.includes(searchText) ||
-   parsed.city?.toLowerCase().includes(searchText) ||
-   parsed.selectedArea?.toLowerCase().includes(searchText));
-   
-  return matchesLocation;
-});
+    // 🔥 STRICT LOCATION FILTER
+    const matchesLocation =
+      (parsed.pincode?.includes(searchText) ||
+        parsed.city?.toLowerCase().includes(searchText) ||
+        parsed.selectedArea?.toLowerCase().includes(searchText));
+
+    return matchesLocation;
+  });
 
   const highlight = (text) => {
-    if (!text) return "";   // ✅ FIX
+    if (!text || typeof text !== "string") return "";
+
     if (!search) return text;
 
     const regex = new RegExp(`(${search})`, "gi");
@@ -129,7 +133,7 @@ const matchesLocation =
                       <h3
                         className="font-bold text-lg"
                         dangerouslySetInnerHTML={{
-                          __html: highlight(home.title),
+                          __html: highlight(home?.title || ""),
                         }}
                       />
 
