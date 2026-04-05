@@ -53,12 +53,12 @@ function App() {
         <Route path="/generate-qr/:propertyId" element={<QRCodeGenerator />} />
         <Route path="/location" element={<LocationAccess />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/nearme" element={<NearMe />} />
+        <Route path="/user/nearme" element={<NearMe />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<Faq />} />
         <Route path="/analytics" element={<OwnerAnalytics />} />
         <Route path="/myproperties" element={<OwnerProperty />} />
-        <Route path="/smartchoice" element={<SmartChoice />} />
+        <Route path="/user/smartchoice" element={<SmartChoice />} />
         <Route path="/edit-property/:type/:propertyId" element={<EditProperty />} />
         <Route path="/edit-property/:propertyId" element={<EditProperty />} />
         <Route path="/owner/qr-insights" element={<QrInsights />} />

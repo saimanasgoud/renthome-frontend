@@ -135,7 +135,7 @@ export default function Navbar() {
             <>
 
               <Link
-                to="/nearme"
+                to="/user/nearme"
                 onClick={() => setOpen(false)}
                 className="w-full px-4 py-3 text-black rounded-lg text-center font-bold hover:bg-green-200 transition"
               >
@@ -143,7 +143,7 @@ export default function Navbar() {
               </Link>
 
               <Link
-                to="/smartchoice"
+                to="/user/smartchoice"
                 onClick={() => setOpen(false)}
                 className="w-full px-4 py-3 text-black rounded-lg text-center font-bold hover:bg-green-200 transition flex items-center justify-center gap-2"
               >
