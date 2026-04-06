@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Country, State, City } from "country-state-city";
+import { API_BASE_URL } from "../utils/config";
 
 /* ✅ Distance calculation (Haversine Formula) */
 function getDistanceInKm(lat1, lon1, lat2, lon2) {
@@ -91,7 +92,7 @@ const [manualLocation, setManualLocation] = useState({
 const [homes, setHomes] = useState([]);
 
 useEffect(() => {
-  fetch(`${import.meta.env.VITE_API_URL}/api/forms/all`)
+  fetch(`${API_BASE_URL}/api/forms/all`)
     .then(res => res.json())
     .then(data => {
       const formatted = data.map(p => {

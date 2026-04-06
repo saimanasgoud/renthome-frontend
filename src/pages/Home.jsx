@@ -3,6 +3,7 @@ import "../styles/Home.css";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer.jsx";
 import { useLocation } from "react-router-dom";
+import { API_BASE_URL } from "../utils/config";
 
 export default function Home() {
 
@@ -26,7 +27,7 @@ export default function Home() {
   const [properties, setProperties] = useState([]);
 
 useEffect(() => {
-  fetch(`${import.meta.env.VITE_API_URL}/api/forms/all`)
+    fetch(`${API_BASE_URL}/api/forms/all`)
     .then(res => res.json())
     .then(data => setProperties(data || []))
     .catch(err => {
@@ -202,7 +203,7 @@ useEffect(() => {
         {/* CTA */}
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center animate-slideUp">
           <Link
-            to="/nearme"
+            to="/user/nearme"
             className="px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-xl font-semibold hover:bg-blue-50 hover:scale-105 transition duration-300"
 
           >Find Homes Near Me

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import NearbyFallback from "../components/NearbyFallback";
+import { API_BASE_URL } from "../utils/config";
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/forms/all`;
+const API_BASE_URL = `${API_BASE_URL}/api/forms/all`;
 
 // ---------------- Utils ----------------
 function getDistanceKm(lat1, lon1, lat2, lon2) {
