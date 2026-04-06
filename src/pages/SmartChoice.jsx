@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import NearbyFallback from "../components/NearbyFallback";
 import { API_BASE_URL } from "../utils/config";
 
-const API_BASE_URL = `${API_BASE_URL}/api/forms/all`;
+const API_URL = `${API_BASE_URL}/api/forms/all`;
 
 // ---------------- Utils ----------------
 function getDistanceKm(lat1, lon1, lat2, lon2) {
@@ -178,7 +178,7 @@ const fetchProperties = async () => {
     // 👇 ADD SMALL DELAY (IMPORTANT FOR UI)
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const res = await fetch(API_BASE_URL);
+    const res = await fetch(API_URL);
 
     if (!res.ok) throw new Error("API error");
 
