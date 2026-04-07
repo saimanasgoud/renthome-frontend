@@ -43,20 +43,17 @@ function App() {
     <>
       <Navbar />
 
-     <Routes>
+      <Routes>
         <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route path="/dashboard" element={<Home />} />
         <Route path="/property/:propertyId" element={<PropertyDetails />} />
         <Route path="/addproperty" element={<AddProperty />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/generateqr/" element={<QRCodeGenerator />} />
-        <Route path="/generate-qr/:propertyId" element={<QRCodeGenerator />} />
         <Route path="/location" element={<LocationAccess />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/user/nearme" element={<NearMe />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<Faq />} />
-        <Route path="/analytics" element={<OwnerAnalytics />} />
         <Route path="/myproperties" element={<OwnerProperty />} />
         <Route path="/user/smartchoice" element={<SmartChoice />} />
         <Route path="/edit-property/:type/:propertyId" element={<EditProperty />} />
@@ -69,6 +66,9 @@ function App() {
         <Route path="/owner/dashboard" element={<Home />} />
         <Route path="/owner/addproperty" element={<AddProperty />} />
         <Route path="/owner/myproperties" element={<OwnerProperty />} />
+        <Route path="owner/generateqr/" element={<QRCodeGenerator />} />
+        <Route path="owner/generate-qr/:propertyId" element={<QRCodeGenerator />} />
+        <Route path="owner/analytics" element={<OwnerAnalytics />} />
 
         {/* USER ROUTES */}
         <Route path="/user/dashboard" element={<Home />} />

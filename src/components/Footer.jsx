@@ -5,96 +5,131 @@ export default function Footer() {
   const [activePolicy, setActivePolicy] = useState(null);
 
   return (
-    <footer className="mt-10 bg-gradient-to-br from-indigo-300 via-slate-10 to-black/10 text-gray-900">
+    <footer className="mt-0 border rounded-2xl bg-gradient-to-r from-indigo-50 to-purple-100 border-t">
 
       {/* TOP FEATURE STRIP */}
 
-
       {/* MAIN FOOTER */}
 
-      <div className="max-w-7xl mx-auto px-3 py-14 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-10">
+<div className="max-w-7xl mx-auto px-3 py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-10">
 
-        {/* BRAND */}
-        <div>
-          <h2 className="text-3xl font-extrabold text-purple-800 mb-3 -mt-10">
-            RentHome
-          </h2>
-          <p className="text-sm leading-relaxed text-gray-900">
-            RentHome is a smart rental platform that connects tenants and
-            property owners directly. It removes brokerage, improves trust,
-            and makes house hunting faster using modern features like QR codes.
-          </p>
+  {/* BRAND / ABOUT */}
+  <div>
+    <h2 className="text-3xl font-extrabold text-indigo-700 mb-3">
+      RentHome
+    </h2>
+    <p className="text-sm text-gray-700 text-justify leading-relaxed">
+  RentHome is a smart rental platform designed to simplify the house hunting process.
+  We connect tenants directly with property owners, eliminating brokers,
+  reducing costs, and ensuring transparency in every step of renting.
+</p>
 
-          <p className="mt-4 text-sm text-green-700 font-medium">
-            Built for trust, not for commissions.
-          </p>
-        </div>
+    <p className="mt-4 text-sm text-green-600 font-semibold">
+      🚀 Smart Renting. Zero Commission.
+    </p>
 
-        {/* TENANTS */}
-        <div className="grid grid-cols-2 gap-10">
-          <div>
-            <h3 className="text-lg grid grid-cols-1 font-semibold text-purple-800 mb-4">
-              For Tenants
-            </h3>
-            <ul className="space-y-3 text-sm">
-              <li><Link to="/" className="hover:text-indigo-400">Home</Link></li>
-              <li><Link to="/properties" className="hover:text-indigo-400">Browse Rental Homes</Link></li>
-              <li><Link to="/nearme" className="hover:text-indigo-400">Find Homes Near Me</Link></li>
-              <li><Link to="/login" className="hover:text-indigo-400">Login / Signup</Link></li>
-              <li><Link to="/faq" className="hover:text-indigo-400">FAQs</Link></li>
-            </ul>
-          </div>
+  <div className="flex gap-3 mt-4 text-gray-600">
+  <span>🌐</span>
+  <span>📱</span>
+  <span>💬</span>
+</div>
 
-          {/* OWNERS */}
-          <div>
-            <h3 className="text-lg font-semibold text-purple-800 mb-4">
-              For Property Owners
-            </h3>
-            <ul className="space-y-3 text-sm">
-              <li><Link to="/login" className="hover:text-indigo-400">Owner Login</Link></li>
-              <li><Link to="/addproperty" className="hover:text-indigo-400">Post Property</Link></li>
-              <li><Link to="/myproperties" className="hover:text-indigo-400">Manage Listings</Link></li>
-              <li><Link to="/analytics" className="hover:text-indigo-400">View Analytics</Link></li>
-              <li><Link to="/report" className="hover:text-indigo-400">Report an Issue</Link></li>
-            </ul>
-          </div>
-        </div>
-        {/* HELP & CONTACT */}
-        <div>
-          <h3 className="text-lg font-semibold text-black mb-4">
-            For Help & Support
-          </h3>
+  </div>
 
-          {/* <p className="text-sm mb-2">📍 Hyderabad, India</p>
-          <p className="text-sm mb-2">📧 support@renthome.com</p>
-          <p className="text-sm mb-4">📞 +91 9XXXXXXXXX</p> */}
+  {/* FEATURES */}
+  <div>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+      Features
+    </h3>
+    <ul className="space-y-2 text-sm text-gray-600">
+      <li>✔ No Brokerage Listings</li>
+      <li>✔ Direct Owner Contact</li>
+      <li>✔ QR Code Property Access</li>
+      <li>✔ Near Me Search</li>
+      <li>✔ Verified Listings</li>
+    </ul>
+  </div>
 
-          <div className="flex flex-col gap-3">
-            <Link
-              to="/faq"
-              className="text-center px-4 py-2 rounded-lg bg-indigo-600
-               hover:bg-indigo-700 text-white text-sm transition"
-            >
-              View FAQs
-            </Link>
+{/* ADVANTAGES */}
+<div>
+  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+    Why RentHome?
+  </h3>
+  <ul className="space-y-2 text-sm text-gray-600">
+    <li>🚫 Zero Brokerage</li>
+    <li>🤝 Direct Owner Deals</li>
+    <li>⚡ Instant Property Access</li>
+    <li>🔍 Smart Search Filters</li>
+    <li>🔐 Trusted Platform</li>
+  </ul>
+</div>
 
-            <Link
-              to="/contact"
-              className="text-center px-4 py-2 rounded-lg border
-               border-indigo-900 text-indigo-900 hover:bg-indigo-500 hover:text-white text-sm transition"
-            >
-              Contact Support
-            </Link>
-          </div>
-        </div>
+  {/* TENANTS */}
+  <div>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+      For Tenants
+    </h3>
+    <ul className="space-y-2 text-sm text-gray-600">
+  <li>🔍 Search homes by pincode, area & city</li>
+  <li>📍 Find properties near your location</li>
+  <li>⚡ Instant access to property details</li>
+  <li>📱 Scan QR code on TO-LET boards</li>
+  <li>💬 Directly contact property owners</li>
+  <li>🚫 No hidden charges</li>
+  <li>🔐 Transparent and secure renting</li>
+</ul>
+  </div>
 
-      </div>
+{/* TENANTS */}
+  <div>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+      For Owners
+    </h3>
+    <ul className="space-y-2 text-sm text-gray-600">
+  <li>➕ Post property listings</li>
+  <li>📝 Manage and update your listings anytime</li>
+  <li>📊 Track views and tenant interest</li>
+  <li>📢 Reach tenants directly without brokers</li>
+  <li>📱 Generate QR codes for your property</li>
+  <li>🏷️ Place QR code on TO-LET boards</li>
+  <li>⚡ Faster and smarter tenant connections</li>
+</ul>
+  </div>
+
+
+  {/* CONTACT */}
+  <div>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+      Contact Us
+    </h3>
+    <p className="text-sm text-gray-600 mb-2">📍 Hyderabad, India</p>
+    <p className="text-sm text-gray-600 mb-2">📧 support@renthome.com</p>
+    <p className="text-sm text-gray-600 mb-4">📞 +91 9XXXXXXXXX</p>
+
+    <Link
+      to="/contact"
+      className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition"
+    >
+      Contact Support
+    </Link>
+  </div>
+
+</div>
+
+<div className="border-t border-gray-200 py-6">
+  <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-6 text-sm text-gray-600">
+    <span>✔ 100+ Users</span>
+    <span>✔ No Brokerage</span>
+    <span>✔ Direct Owner Contact</span>
+    <span>✔ Secure Platform</span>
+  </div>
+</div>
 
       {/* BOTTOM BAR */}
       <div className="border-t border-white/10 py-5 px-0.5 flex flex-col sm:flex-row items-center
- justify-between gap-5 text-sm text-gray-900">
+ justify-between gap-5 text-sm text-gray-700">
 
-        <div className="grid grid-cols-2 -mt-5 gap-4 text-left">
+        <div className="grid grid-cols-2 gap-4 text-left">
           {
             [
               "Tenant Policy",

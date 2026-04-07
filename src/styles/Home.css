@@ -62,6 +62,10 @@
   }
 }
 
+button:hover, a:hover {
+  transform: scale(1.05);
+}
+
 .animate-fadeIn {
   animation: fadeIn 1.0s ease forwards;
 }
@@ -126,4 +130,15 @@
 
 .animate-fadeIn {
   animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #eee, #ddd, #eee);
+  background-size: 400px 100%;
+  animation: shimmer 1.2s infinite;
 }

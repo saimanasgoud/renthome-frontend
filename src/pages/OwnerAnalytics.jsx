@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { isOwnerLoggedIn } from "../utils/auth";
 import { getAnalyticsStats } from "../api/analyticsApi";
-import Loading from "../components/Loader";
 import { API_BASE_URL } from "../utils/config";
 
 
@@ -12,6 +11,7 @@ export default function OwnerAnalytics() {
   const [activePanel, setActivePanel] = useState(null); // 👈 interaction
   const [mostViewedProperty, setMostViewedProperty] = useState(null);
   const [scanHistory, setScanHistory] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
 
@@ -45,34 +45,26 @@ export default function OwnerAnalytics() {
 
   }, []);
 
-  useEffect(() => {
+  const loadStats = async () => {
+    try {
+      setError(null);
 
-    async function loadStats() {
+      const data = await getAnalyticsStats();
 
-      try {
+      setStats({
+        totalViews: data.totalViews || 0,
+        totalQrScans: data.totalQrScans || 0,
+        totalProperties: data.totalProperties || 0,
+        todayQrScans: data.todayQrScans || 0
+      });
 
-        const data = await getAnalyticsStats();
-
-        setStats({
-          totalViews: data.totalViews || 0,
-          totalQrScans: data.totalQrScans || 0,
-          totalProperties: data.totalProperties || 0,
-          todayQrScans: data.todayQrScans || 0
-        });
-
-        if (data.mostViewedPropertyId) {
-          setMostViewedProperty({
-            id: data.mostViewedPropertyId,
-            count: data.mostViewedCount
-          });
-        }
-
-      } catch (err) {
-        console.error("Analytics error:", err);
-      }
-
+    } catch (err) {
+      console.error(err);
+      setError("Unable to fetch latest analytics.");
     }
+  };
 
+  useEffect(() => {
     loadStats();
   }, []);
 
@@ -120,13 +112,82 @@ export default function OwnerAnalytics() {
   }, [stats]);
 
   const engagementPercent = stats
-    ? Math.min(stats.todayQrScans * 10, 100)
+    ? Math.min(stats?.todayQrScans * 10, 100)
     : 0;
 
-  if (!stats) {
-    return <Loading />;
+  // if (!stats) {
+  //   return <Loading />;
+  // }
+
+  const isEmpty =
+    stats &&
+    stats.totalViews === 0 &&
+    stats.totalQrScans === 0 &&
+    stats.totalProperties === 0;
+
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-white p-6 rounded-xl shadow text-center animate-fadeIn">
+
+          <h2 className="text-xl font-bold text-red-500 mb-2">
+            ⚠️ Analytics temporarily unavailable
+          </h2>
+
+          <p className="text-gray-600 mb-4">
+            Our backend service is currently unavailable or restarting.
+            Don’t worry — your data is safe.
+            Please try again shortly.
+          </p>
+          <button
+            onClick={loadStats}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            🔄 Retry
+          </button>
+
+        </div>
+      </div>
+    );
   }
 
+  if (!stats && !error) {
+    return (
+      <div className="p-6 space-y-4 mt-20 animate-pulse">
+        <div className="h-32 bg-gray-200 rounded-xl"></div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="h-20 bg-gray-200 rounded-xl"></div>
+          <div className="h-20 bg-gray-200 rounded-xl"></div>
+          <div className="h-20 bg-gray-200 rounded-xl"></div>
+          <div className="h-20 bg-gray-200 rounded-xl"></div>
+        </div>
+
+        <div className="h-40 bg-gray-200 rounded-xl"></div>
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-center">
+        <h2 className="text-2xl font-bold text-gray-700 mb-2">
+          📭 No Data Yet
+        </h2>
+        <p className="text-gray-500 mb-4">
+          Start sharing your property to see analytics here.
+        </p>
+
+        <Link
+          to="/addproperty"
+          className="px-6 py-2 bg-blue-600 text-white rounded-xl"
+        >
+          Add Property
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-24 px-4 min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -165,23 +226,23 @@ export default function OwnerAnalytics() {
       <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-y-10 text-center">
         <Metric
           label="Total Views"
-          value={stats.totalViews}
+          value={stats?.totalViews || 0}
           onClick={() => setActivePanel("views")}
         />
         <Metric
           label="QR Scans"
-          value={stats.totalQrScans}
+          value={stats?.totalQrScans || 0}
           onClick={() => setActivePanel("qr")}
         />
         <Metric
           label="Today"
-          value={stats.todayQrScans}
+          value={stats?.todayQrScans || 0}
           highlight
           onClick={() => setActivePanel("today")}
         />
         <Metric
           label="Listings"
-          value={stats.totalProperties}
+          value={stats?.totalProperties || 0}
           onClick={() => setActivePanel("property")}
         />
       </div>
@@ -215,24 +276,25 @@ export default function OwnerAnalytics() {
         </div>
       )}
 
-<div className="mt-5 bg-white rounded-xl shadow p-4 text-center">
+      <div className="mt-5 bg-white rounded-xl shadow p-4 text-center">
 
-  <h2 className="text-lg font-semibold text-gray-800 bg-yellow-100 border rounded-lg">
-    Track Your Property Performance
-  </h2>
+        <h2 className="text-lg font-semibold text-gray-800 bg-yellow-100 border rounded-lg">
+          Track Your Property Performance
+        </h2>
 
-  <p className="text-sm text-gray-500 italic mt-2 mb-4">
-    View detailed QR scans, visitor behavior, and engagement analytics.
-  </p>
+        <p className="text-sm text-gray-500 italic mt-2 mb-4">
+          View detailed QR scans, visitor behavior, and engagement analytics.
+        </p>
 
-  <Link
-    to="/owner/qr-insights"
-    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl shadow hover:bg-indigo-700 active:scale-95 transition"
-  >
-    📊 Open QR Insights
-  </Link>
+        <Link
+          to="/owner/qr-insights"
+          className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl shadow hover:bg-indigo-700 active:scale-95 transition"
+        >
+          📊 Open QR Insights
+        </Link>
 
-</div>
+      </div>
+
 
       {/* ===== ENGAGEMENT ===== */}
       <div className="mt-10">
@@ -288,7 +350,7 @@ export default function OwnerAnalytics() {
             impact="+ Higher conversion"
           />
 
-          {stats.todayQrScans >= 10 && (
+          {stats?.todayQrScans >= 10 && (
             <Suggestion
               icon="🔥"
               title="You’re trending today!"
@@ -300,6 +362,7 @@ export default function OwnerAnalytics() {
 
         </div>
       </div>
+
 
       {/* ===== INTERACTION PANEL (BOTTOM SHEET) ===== */}
       {activePanel && (
@@ -390,13 +453,13 @@ function panelTitle(type) {
 function panelContent(type, stats) {
   switch (type) {
     case "views":
-      return `Your property page was viewed ${stats.totalViews} times. These views come from QR scans and shared links.`;
+      return `Your property page was viewed ${stats?.totalViews || 0} times. These views come from QR scans and shared links.`;
     case "qr":
-      return `Your QR code was scanned ${stats.totalQrScans} times. QR scans show high-intent users.`;
+      return `Your QR code was scanned ${stats?.totalQrScans || 0} times. QR scans show high-intent users.`;
     case "today":
-      return `Today alone, ${stats.todayQrScans} people interacted with your listing.`;
+      return `Today alone, ${stats?.todayQrScans || 0} people interacted with your listing.`;
     case "property":
-      return `You currently have ${stats.totalProperties} active property listed.`;
+      return `You currently have ${stats?.totalProperties || 0} active property listed.`;
     default:
       return "";
   }
