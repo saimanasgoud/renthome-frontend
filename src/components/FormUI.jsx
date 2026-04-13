@@ -1,56 +1,13 @@
-// // src/components/propertyFormUI/FormUI.jsx
-
-// export const Section = ({ title }) => (
-//   <h2 className="text-lg font-semibold mb-4 mt-6">
-//     {title}
-//   </h2>
-// );
-
-// export const Input = ({ id,label, type = "text", value, onChange }) => (
-//   <>
-//     <label className="block text-sm mb-1">{label}</label>
-//     <input
-//       id={id}
-//       type={type}
-//       value={value}
-//       onChange={onChange}
-//       className="w-full mb-4 px-4 py-3 border rounded-lg"
-//     />
-//   </>
-// );
-
-// export const Select = ({ label, options, value, onChange }) => (
-//   <>
-//     <label className="block text-sm mb-1">{label}</label>
-//     <select value={value} onChange={onChange} className="w-full mb-4 px-4 py-3 border rounded-lg">
-//       <option value="">Select</option>
-//       {options.map((o) => (
-//         <option key={o}>{o}</option>
-//       ))}
-//     </select>
-//   </>
-// );
-
-// export const Upload = ({ label, onChange }) => (
-//   <>
-//     <label className="block text-sm mb-1">{label}</label>
-//     <input type="file" multiple onChange={onChange} className="mb-4" />
-//   </>
-// );
-
-// export const SaveButton = ({ onClick }) => (
-//   <button type="button" onClick={onClick} className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold">
-//     Save Property
-//   </button>
-// );
-
-
 // src/components/propertyFormUI/FormUI.jsx
 
+/* ================= SECTION ================= */
 export const Section = ({ title }) => (
-  <h2 className="text-lg font-semibold mb-4 mt-8 border-b pb-2">
-    {title}
-  </h2>
+  <div className="mb-6 mt-10">
+    <h2 className="text-xl font-semibold text-gray-800 tracking-wide">
+      {title}
+    </h2>
+    <div className="h-[2px] w-10 bg-blue-500 mt-2 rounded-full"></div>
+  </div>
 );
 
 /* ================= INPUT ================= */
@@ -66,8 +23,11 @@ export const Input = ({
   readOnly = false,
   error,
 }) => (
-  <div className="mb-4">
-    <label htmlFor={id} className="block text-sm mb-1 font-medium">
+  <div className="mb-5 group">
+    <label
+      htmlFor={id}
+      className="block text-sm mb-1 font-medium text-gray-600 group-focus-within:text-blue-600 transition"
+    >
       {label}
       {required && <span className="text-red-500"> *</span>}
     </label>
@@ -81,12 +41,20 @@ export const Input = ({
       onChange={onChange}
       required={required}
       readOnly={readOnly}
-      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2
-        ${error ? "border-red-500 focus:ring-red-400" : "focus:ring-blue-400"}
+      className={`
+        w-full px-4 py-2.5 rounded-xl border bg-white
+        transition-all duration-200
+        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+        hover:border-gray-400
+        ${error ? "border-red-500 focus:ring-red-400" : "border-gray-300"}
       `}
     />
 
-    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    {error && (
+      <p className="text-red-500 text-xs mt-1 animate-pulse">
+        {error}
+      </p>
+    )}
   </div>
 );
 
@@ -100,8 +68,11 @@ export const Select = ({
   onChange,
   required = false,
 }) => (
-  <div className="mb-4">
-    <label htmlFor={id} className="block text-sm mb-1 font-medium">
+  <div className="mb-5 group">
+    <label
+      htmlFor={id}
+      className="block text-sm mb-1 font-medium text-gray-600 group-focus-within:text-blue-600 transition"
+    >
       {label}
       {required && <span className="text-red-500"> *</span>}
     </label>
@@ -112,7 +83,12 @@ export const Select = ({
       value={value || ""}
       onChange={onChange}
       required={required}
-      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+      className="
+        w-full px-4 py-2.5 rounded-xl border border-gray-300 bg-white
+        transition-all duration-200
+        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+        hover:border-gray-400
+      "
     >
       <option value="">Select</option>
 
@@ -133,19 +109,25 @@ export const Upload = ({
   multiple = true,
   onChange,
 }) => (
-  <div className="mb-4">
-    <label htmlFor={id} className="block text-sm mb-1 font-medium">
+  <div className="mb-5">
+    <label className="block text-sm mb-2 font-medium text-gray-600">
       {label}
     </label>
 
-    <input
-      id={id}
-      name={name}
-      type="file"
-      multiple={multiple}
-      onChange={onChange}
-      className="w-full text-sm border rounded-lg p-2"
-    />
+    <div className="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center transition hover:border-blue-400 hover:bg-blue-50 cursor-pointer">
+      <input
+        id={id}
+        name={name}
+        type="file"
+        multiple={multiple}
+        onChange={onChange}
+        className="hidden"
+      />
+
+      <label htmlFor={id} className="cursor-pointer text-sm text-gray-500">
+        📁 Click to upload files or drag & drop
+      </label>
+    </div>
   </div>
 );
 
@@ -159,10 +141,12 @@ export const SaveButton = ({
     type="button"
     onClick={onClick}
     disabled={loading}
-    className={`w-full py-3 rounded-xl font-semibold transition
+    className={`
+      w-full py-3 rounded-xl font-semibold text-white
+      transition-all duration-200 shadow-md
       ${loading
         ? "bg-gray-400 cursor-not-allowed"
-        : "bg-blue-600 hover:bg-blue-700 text-white"}
+        : "bg-blue-600 hover:bg-blue-700 active:scale-95 hover:shadow-lg"}
     `}
   >
     {loading ? "Saving..." : text}

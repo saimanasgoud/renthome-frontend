@@ -2,6 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../utils/config";
 
+// const fetchWithTimeout = (url, options, timeout = 6000) => {
+//   return Promise.race([
+//     fetch(url, options),
+//     new Promise((_, reject) =>
+//       setTimeout(() => reject(new Error("Server timeout")), timeout)
+//     ),
+//   ]);
+// };
+
 export default function Login() {
   const navigate = useNavigate();
 
@@ -17,6 +26,19 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState("");
   const [resendCount, setResendCount] = useState(0);
   const [loadingText, setLoadingText] = useState("Logging in...");
+const [dots, setDots] = useState("");
+
+useEffect(() => {
+  if (linkLoading) {
+    const interval = setInterval(() => {
+      setDots((prev) => (prev.length === 3 ? "" : prev + "."));
+    }, 400);
+
+    return () => clearInterval(interval);
+  } else {
+    setDots("");
+  }
+}, [linkLoading]);
 
   useEffect(() => {
     if (timer > 0) {
@@ -39,23 +61,51 @@ export default function Login() {
       return;
     }
 
-    console.log("Sending:", mobile, password);
+    if (!navigator.onLine) {
+      setError("❌ No internet connection");
+      return;
+    }
 
     setLoading(true);
-    setLoadingText("Logging in...");
+    setLoadingText("Connecting to server...");
+
+    // const failSafe = setTimeout(() => {
+    //   setLoading(false);
+    //   setError("❌ Request taking too long");
+    // }, 3000);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ mobile, password }),
-      });
+
+      // Step 1: Connecting
+      setLoadingText("Connecting to server...");
+
+      // Step 2: Logging in
+      setLoadingText("Logging in...");
+
+      // const res = await fetchWithTimeout(
+      //   `${API_BASE_URL}/api/auth/login`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ mobile, password }),
+      //   },
+      //   1000
+      // );
+
+    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ mobile, password }),
+});
 
       if (!res.ok) {
         setError("Invalid mobile or password");
         setLoading(false);
+        // clearTimeout(failSafe);
         return;
       }
 
@@ -73,20 +123,30 @@ export default function Login() {
 
       setTimeout(() => {
         setLoading(false);
+        // clearTimeout(failSafe);
 
-       if (data.role === "ADMIN") {
-  navigate("/admin");
-} else if (data.role === "OWNER") {
-  navigate("/owner/dashboard");
-} else {
-  navigate("/user/dashboard");
-}
-
+        if (data.role === "ADMIN") {
+          navigate("/admin");
+        } else if (data.role === "OWNER") {
+          navigate("/owner/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
       }, 800);
 
     } catch (err) {
-      setError("Login failed");
+      console.error(err);
+
+      if (!navigator.onLine) {
+        setError("❌ No internet connection");
+      } else if (err.message === "Server timeout") {
+        setError("⏳ Server not responding");
+      } else {
+        setError("❌ Backend server not running");
+      }
+
       setLoading(false);
+      // clearTimeout(failSafe);
     }
   };
 
@@ -99,12 +159,7 @@ export default function Login() {
     }
 
     if (!email) {
-      setErrorMsg("Please enter email");
-      return;
-    }
-
-    if (resendCount >= 3) {
-      setErrorMsg("❌ Maximum resend limit reached. Try later.");
+      setErrorMsg("⚠️ Please enter email");
       return;
     }
 
@@ -113,26 +168,59 @@ export default function Login() {
     setSuccessMsg("");
 
     try {
+
+      console.log("Sending request to:", `${API_BASE_URL}/api/auth/send-magic-link`);
+
+      // const res = await fetchWithTimeout(
+      //   `${API_BASE_URL}/api/auth/send-magic-link`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ email }),
+      //   },
+      //   15000   // ✅ 3 sec max
+      // );
+
+
       const res = await fetch(`${API_BASE_URL}/api/auth/send-magic-link`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ email }),
+});
 
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
+    const data = await res.json();
 
-      setSuccessMsg("✅ Magic link sent! Check your email");
+if (!res.ok) {
+  throw new Error(data.message || "Server error");
+}
+
+if (!data.success) {
+  throw new Error(data.message || "Operation failed");
+}
+
+      setSuccessMsg(`✅ Magic link sent to ${email}`);
       setTimer(30);
-      setResendCount((prev) => prev + 1);
 
     } catch (err) {
-      setErrorMsg("❌ Failed to send link. Try Mobile + Password login");
+
+  console.error("FULL ERROR:", err);
+
+  if (err.message) {
+    setErrorMsg("❌ " + err.message);
+  } else {
+    setErrorMsg("❌ Unknown error occurred");
+  }
+      
+      // if (err.message.includes("not registered")) {
+      //   setErrorMsg("❌ Email not registered");
+      // }
+
     } finally {
-      setLinkLoading(false);
+      setLinkLoading(false); // ✅ ALWAYS RESET BUTTON
     }
   };
 
@@ -179,7 +267,8 @@ export default function Login() {
             <button
               onClick={() => {
                 setLoginType("otp");
-                setError("");
+                setError("");        // clear mobile error
+                setErrorMsg("");     // clear email error
                 setMobile("");
                 setPassword("");
               }}
@@ -257,14 +346,12 @@ export default function Login() {
 
               <button
                 onClick={sendMagicLink}
-                disabled={timer > 0}
-                className="w-full py-3 bg-green-600 text-white rounded-xl flex items-center justify-center gap-2"
+                disabled={linkLoading || timer > 0 || !email}
+                className={`w-full py-3 rounded-xl text-white font-semibold transition duration-300
+    ${linkLoading ? "bg-green-600" : "bg-blue-600 hover:bg-blue-700"}
+  `}
               >
-                {linkLoading ? (
-                  "Sending..."
-                ) : (
-                  "Send Magic Link"
-                )}
+                {linkLoading ? "Sending... Please wait ⏳" : "Send Magic Link"}
               </button>
 
               {timer === 0 && resendCount > 0 && resendCount < 3 && (
