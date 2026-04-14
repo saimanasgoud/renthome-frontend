@@ -1,27 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isOwnerLoggedIn, logout } from "../utils/auth";
-import { isAdmin } from "../utils/auth";
+// import { isAdmin } from "../utils/auth";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const [showGuide, setShowGuide] = useState(false);
   const [showSafety, setShowSafety] = useState(false);
   const lastProperty = localStorage.getItem("lastViewedProperty");
   const [loggingOut, setLoggingOut] = useState(false);
-  const admin = isAdmin();
   const [role, setRole] = useState(localStorage.getItem("role"));
 
   // 🔑 Single source of truth
-  const [ownerLoggedIn, setOwnerLoggedIn] = useState(isOwnerLoggedIn());
-
+  const [ownerLoggedIn, setOwnerLoggedIn] = useState(!!localStorage.getItem("token"));
 
   useEffect(() => {
     const updateAuth = () => {
-      setOwnerLoggedIn(isOwnerLoggedIn());
-      setRole(localStorage.getItem("role"));
+      const storedRole = localStorage.getItem("role");
+      setRole(storedRole);
+      setOwnerLoggedIn(!!localStorage.getItem("token"));
     };
 
     updateAuth();
@@ -32,15 +30,6 @@ export default function Navbar() {
       window.removeEventListener("authChange", updateAuth);
     };
   }, []);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (query.trim()) {
-      navigate("/properties", { state: { search: query } });
-      setQuery("");
-      setOpen(false);
-    }
-  };
 
   // Disable body scroll when menu is open
   useEffect(() => {
@@ -117,11 +106,11 @@ export default function Navbar() {
           {/* COMMON */}
           <Link
             to={
-              role === "OWNER"
-                ? "/owner/dashboard"
+              role === "USER"
+                ? "/user/dashboard"
                 : role === "ADMIN"
                   ? "/admin"
-                  : "/user/dashboard"
+                  : "/dashboard"
             }
 
             onClick={() => setOpen(false)}

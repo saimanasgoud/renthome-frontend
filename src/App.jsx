@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 // Components
 import Navbar from "./components/Navbar";
 import Loader from "./components/Loader";
+import NotFound from "./components/NotFound";
 
 // Pages
 import Home from "./pages/Home";
@@ -23,6 +24,7 @@ import EditProperty from "./pages/EditProperty";
 import QrInsights from "./pages/QrInsights";
 import MagicLogin from "./components/MagicLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRout";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -73,6 +75,41 @@ function App() {
         {/* USER ROUTES */}
         <Route path="/user/dashboard" element={<Home />} />
         <Route path="/user/property/:propertyId" element={<PropertyDetails />} />
+
+        {/* PROTECTED ROUTES */}
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRole="ADMIN">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+// USER ROUTES
+        <Route
+          path="/user/dashboard"
+          element={
+            <ProtectedRoute allowedRole="USER">
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+
+<Route
+  path="/login"
+  element={
+    localStorage.getItem("token") ? (
+      <Navigate to="/" />
+    ) : (
+      <Login />
+    )
+  }
+/>
+
+<Route path="*" element={<NotFound />} />
+
       </Routes>
     </>
 

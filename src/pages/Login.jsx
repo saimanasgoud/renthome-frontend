@@ -124,7 +124,7 @@ useEffect(() => {
       setTimeout(() => {
         setLoading(false);
         // clearTimeout(failSafe);
-
+        
         if (data.role === "ADMIN") {
           navigate("/admin");
         } else {
