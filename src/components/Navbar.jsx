@@ -15,21 +15,23 @@ export default function Navbar() {
   // 🔑 Single source of truth
   const [ownerLoggedIn, setOwnerLoggedIn] = useState(!!localStorage.getItem("token"));
 
-  useEffect(() => {
-    const updateAuth = () => {
-      const storedRole = localStorage.getItem("role");
-      setRole(storedRole);
-      setOwnerLoggedIn(!!localStorage.getItem("token"));
-    };
+ useEffect(() => {
+  const updateAuth = () => {
+    const storedRole = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
 
-    updateAuth();
+    setRole(storedRole);
+    setOwnerLoggedIn(!!token);
+  };
 
-    window.addEventListener("authChange", updateAuth);
+  updateAuth();
 
-    return () => {
-      window.removeEventListener("authChange", updateAuth);
-    };
-  }, []);
+  window.addEventListener("authChange", updateAuth);
+
+  return () => {
+    window.removeEventListener("authChange", updateAuth);
+  };
+}, []);
 
   // Disable body scroll when menu is open
   useEffect(() => {
@@ -120,7 +122,7 @@ export default function Navbar() {
           </Link>
 
           {/* 👤 USER VIEW */}
-          {(!role || role === "USER") && (
+          {!ownerLoggedIn && (
             <>
 
               <Link
