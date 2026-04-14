@@ -127,8 +127,6 @@ useEffect(() => {
 
         if (data.role === "ADMIN") {
           navigate("/admin");
-        } else if (data.role === "OWNER") {
-          navigate("/owner/dashboard");
         } else {
           navigate("/user/dashboard");
         }
