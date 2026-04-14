@@ -12,20 +12,20 @@ export default function Navbar() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [role, setRole] = useState(localStorage.getItem("role"));
 
- useEffect(() => {
-  const updateAuth = () => {
-    const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
-  };
+  useEffect(() => {
+    const updateAuth = () => {
+      const storedRole = localStorage.getItem("role");
+      setRole(storedRole);
+    };
 
-  updateAuth();
+    updateAuth();
 
-  window.addEventListener("authChange", updateAuth);
+    window.addEventListener("authChange", updateAuth);
 
-  return () => {
-    window.removeEventListener("authChange", updateAuth);
-  };
-}, []);
+    return () => {
+      window.removeEventListener("authChange", updateAuth);
+    };
+  }, []);
 
   // Disable body scroll when menu is open
   useEffect(() => {
@@ -101,11 +101,11 @@ export default function Navbar() {
           {/* COMMON */}
           <Link
             to={
-              role === "USER"
-                ? "/user/dashboard"
-                : role === "ADMIN"
-                  ? "/admin"
-                  : "/dashboard"
+              role === "ADMIN"
+                ? "/admin"
+                : role === "OWNER"
+                  ? "/owner/dashboard"
+                  : "/user/dashboard"
             }
 
             onClick={() => setOpen(false)}

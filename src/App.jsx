@@ -93,6 +93,14 @@ function App() {
         />
 
         <Route
+          path="/owner/dashboard"
+          element={
+            <ProtectedRoute allowedRole="OWNER">
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/owner/generateqr"
           element={
             <ProtectedRoute allowedRole="OWNER">
@@ -129,6 +137,8 @@ function App() {
             localStorage.getItem("token") ? (
               localStorage.getItem("role") === "ADMIN" ? (
                 <Navigate to="/admin" replace />
+              ) : localStorage.getItem("role") === "OWNER" ? (
+                <Navigate to="/owner/dashboard" replace />
               ) : (
                 <Navigate to="/user/dashboard" replace />
               )
@@ -145,6 +155,8 @@ function App() {
             localStorage.getItem("token") ? (
               localStorage.getItem("role") === "ADMIN" ? (
                 <Navigate to="/admin" replace />
+              ) : localStorage.getItem("role") === "OWNER" ? (
+                <Navigate to="/owner/dashboard" replace />
               ) : (
                 <Navigate to="/user/dashboard" replace />
               )
@@ -153,6 +165,7 @@ function App() {
             )
           }
         />
+
 
         {/* 404 (MUST BE LAST) */}
         <Route path="*" element={<NotFound />} />

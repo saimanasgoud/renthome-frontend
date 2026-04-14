@@ -125,11 +125,17 @@ useEffect(() => {
         setLoading(false);
         // clearTimeout(failSafe);
         
-        if (data.role === "ADMIN") {
-          navigate("/admin");
-        } else {
-          navigate("/user/dashboard");
-        }
+       const role = data.role?.toUpperCase();
+
+localStorage.setItem("role", role);
+
+if (role === "ADMIN") {
+  navigate("/admin");
+} else if (role === "OWNER") {
+  navigate("/owner/dashboard");
+} else {
+  navigate("/user/dashboard");
+}
       }, 800);
 
     } catch (err) {
