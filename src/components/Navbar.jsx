@@ -12,16 +12,10 @@ export default function Navbar() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [role, setRole] = useState(localStorage.getItem("role"));
 
-  // 🔑 Single source of truth
-  const [ownerLoggedIn, setOwnerLoggedIn] = useState(!!localStorage.getItem("token"));
-
  useEffect(() => {
   const updateAuth = () => {
     const storedRole = localStorage.getItem("role");
-    const token = localStorage.getItem("token");
-
     setRole(storedRole);
-    setOwnerLoggedIn(!!token);
   };
 
   updateAuth();
@@ -46,7 +40,6 @@ export default function Navbar() {
     setOpen(false);
 
     logout();
-    setOwnerLoggedIn(false);
     window.dispatchEvent(new Event("authChange"));
 
     setTimeout(() => {
@@ -96,7 +89,7 @@ export default function Navbar() {
           <h2 className="text-lg font-semibold">
             {role === "ADMIN"
               ? "Admin Portal 👑"
-              : ownerLoggedIn
+              : role === "OWNER"
                 ? "Owner Portal"
                 : "User Portal"}
           </h2>
@@ -122,7 +115,7 @@ export default function Navbar() {
           </Link>
 
           {/* 👤 USER VIEW */}
-          {!ownerLoggedIn && (
+          {!localStorage.getItem("token") && (
             <>
 
               <Link
@@ -226,7 +219,7 @@ export default function Navbar() {
           )}
 
           {/* 🏠 OWNER VIEW */}
-          {ownerLoggedIn && role === "OWNER" && (<>
+          {role === "OWNER" && (<>
             <Link
               to="/owner/addproperty"
               onClick={() => setOpen(false)}

@@ -30,115 +30,30 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000); // Simulate a 1.5 second loading time
-
+    const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return <Loader />;
-  }
+  if (loading) return <Loader />;
 
   return (
     <>
       <Navbar />
 
       <Routes>
-        <Route
-          path="/"
-          element={
-            localStorage.getItem("token") ? (
-              localStorage.getItem("role") === "ADMIN" ? (
-                <Navigate to="/admin" />
-              ) : (
-                <Navigate to="/user/dashboard" />
-              )
-            ) : (
-              <Navigate to="/dashboard" />
-            )
-          }
-        />
+        {/* PUBLIC */}
         <Route path="/dashboard" element={<Home />} />
         <Route path="/property/:propertyId" element={<PropertyDetails />} />
-        <Route path="/addproperty" element={<AddProperty />} />
         <Route path="/location" element={<LocationAccess />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/user/nearme" element={<NearMe />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<Faq />} />
-        <Route path="/myproperties" element={<OwnerProperty />} />
-        <Route path="/user/smartchoice" element={<SmartChoice />} />
-        <Route path="/edit-property/:type/:propertyId" element={<EditProperty />} />
-        <Route path="/edit-property/:propertyId" element={<EditProperty />} />
-        <Route path="/owner/qr-insights" element={<QrInsights />} />
         <Route path="/magic-login" element={<MagicLogin />} />
 
-        {/* OWNER ROUTES */}
-        <Route
-  path="/owner/addproperty"
-  element={
-    <ProtectedRoute allowedRole="OWNER">
-      <AddProperty />
-    </ProtectedRoute>
-  }
-/>
-
-<Route
-  path="/owner/myproperties"
-  element={
-    <ProtectedRoute allowedRole="OWNER">
-      <OwnerProperty />
-    </ProtectedRoute>
-  }
-/>
-
-<Route path="/owner/analytics" element={
-    <ProtectedRoute allowedRole="OWNER">
-      <OwnerAnalytics />
-    </ProtectedRoute>
-  }
-/>
-
-<Route path="/owner/generateqr" element={ <ProtectedRoute allowedRole="OWNER"> <QRCodeGenerator />
-    </ProtectedRoute> } />
-
-<Route
-  path="/owner/generate-qr/:propertyId"
-  element={
-    <ProtectedRoute allowedRole="OWNER"> <QRCodeGenerator /> </ProtectedRoute>
-  }
-/>
-        {/* USER ROUTES */}
+        {/* USER */}
+        <Route path="/user/nearme" element={<NearMe />} />
+        <Route path="/user/smartchoice" element={<SmartChoice />} />
         <Route path="/user/property/:propertyId" element={<PropertyDetails />} />
-
-        {/* PROTECTED ROUTES */}
-
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedRole="ADMIN">
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-
-        <Route
-          path="/login"
-          element={
-            localStorage.getItem("token") ? (
-              localStorage.getItem("role") === "ADMIN" ? (
-                <Navigate to="/admin" />
-              ) : (
-                <Navigate to="/user/dashboard" />
-              )
-            ) : (
-              <Login />
-            )
-          }
-        />
 
         <Route
           path="/user/dashboard"
@@ -149,11 +64,100 @@ function App() {
           }
         />
 
-        <Route path="*" element={<NotFound />} />
+        {/* OWNER */}
+        <Route
+          path="/owner/addproperty"
+          element={
+            <ProtectedRoute allowedRole="OWNER">
+              <AddProperty />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/owner/myproperties"
+          element={
+            <ProtectedRoute allowedRole="OWNER">
+              <OwnerProperty />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/owner/analytics"
+          element={
+            <ProtectedRoute allowedRole="OWNER">
+              <OwnerAnalytics />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/owner/generateqr"
+          element={
+            <ProtectedRoute allowedRole="OWNER">
+              <QRCodeGenerator />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/owner/generate-qr/:propertyId"
+          element={
+            <ProtectedRoute allowedRole="OWNER">
+              <QRCodeGenerator />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/owner/qr-insights" element={<QrInsights />} />
+
+        {/* ADMIN */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRole="ADMIN">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* LOGIN */}
+        <Route
+          path="/login"
+          element={
+            localStorage.getItem("token") ? (
+              localStorage.getItem("role") === "ADMIN" ? (
+                <Navigate to="/admin" replace />
+              ) : (
+                <Navigate to="/user/dashboard" replace />
+              )
+            ) : (
+              <Login />
+            )
+          }
+        />
+
+        {/* ROOT REDIRECT (VERY IMPORTANT - KEEP HERE) */}
+        <Route
+          path="/"
+          element={
+            localStorage.getItem("token") ? (
+              localStorage.getItem("role") === "ADMIN" ? (
+                <Navigate to="/admin" replace />
+              ) : (
+                <Navigate to="/user/dashboard" replace />
+              )
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          }
+        />
+
+        {/* 404 (MUST BE LAST) */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
-
   );
 }
 
