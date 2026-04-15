@@ -149,23 +149,7 @@ function App() {
         />
 
         {/* ROOT REDIRECT (VERY IMPORTANT - KEEP HERE) */}
-        <Route
-          path="/"
-          element={
-            localStorage.getItem("token") ? (
-              localStorage.getItem("role") === "ADMIN" ? (
-                <Navigate to="/admin" replace />
-              ) : localStorage.getItem("role") === "OWNER" ? (
-                <Navigate to="/owner/dashboard" replace />
-              ) : (
-                <Navigate to="/user/dashboard" replace />
-              )
-            ) : (
-              <Navigate to="/dashboard" replace />
-            )
-          }
-        />
-
+       <Route path="/" element={<Home />} />
 
         {/* 404 (MUST BE LAST) */}
         <Route path="*" element={<NotFound />} />

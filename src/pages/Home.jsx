@@ -13,6 +13,9 @@ export default function Home() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [wakingUp, setWakingUp] = useState(false);
+  const [backendStatus, setBackendStatus] = useState("unknown");
+  // "unknown" | "sleeping" | "running"
 
   useEffect(() => {
 
@@ -30,31 +33,41 @@ export default function Home() {
     setTimeout(() => setLoaded(true), 200);
   }, []);
 
+
+  const fetchWithTimeout = (url, options, timeout = 5000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("TIMEOUT")), timeout)
+      ),
+    ]);
+  };
+
   const [properties, setProperties] = useState([]);
 
-useEffect(() => {
-  setLoading(true);
+  useEffect(() => {
+    setLoading(true);
 
-  const startTime = Date.now();
+    const startTime = Date.now();
 
-  fetch(`${API_BASE_URL}/api/forms/all`)
-    .then(res => res.json())
-    .then(data => setProperties(data || []))
-    .catch(err => {
-      console.error(err);
-      setProperties([]);
-    })
-    .finally(() => {
-      const elapsed = Date.now() - startTime;
-      const minTime = 10000; // 👈 2 seconds (change this)
+    fetch(`${API_BASE_URL}/api/forms/all`)
+      .then(res => res.json())
+      .then(data => setProperties(data || []))
+      .catch(err => {
+        console.error(err);
+        setProperties([]);
+      })
+      .finally(() => {
+        const elapsed = Date.now() - startTime;
+        const minTime = 3000; // 👈 2 seconds (change this)
 
-      const remainingTime = minTime - elapsed;
+        const remainingTime = minTime - elapsed;
 
-      setTimeout(() => {
-        setLoading(false);
-      }, remainingTime > 0 ? remainingTime : 0);
-    });
-}, []);
+        setTimeout(() => {
+          setLoading(false);
+        }, remainingTime > 0 ? remainingTime : 0);
+      });
+  }, []);
 
   const location = useLocation();
 
@@ -63,6 +76,40 @@ useEffect(() => {
       setSearch(location.state.pincode);
     }
   }, []);
+
+
+const checkBackend = async () => {
+  setWakingUp(true);
+
+  try {
+    const res = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/ping`,
+      {},
+      5000
+    );
+
+    if (res.ok) {
+      setBackendStatus("running");
+    } else {
+      setBackendStatus("unreachable");
+    }
+  } catch (err) {
+    setBackendStatus("unreachable");
+  }
+
+  setWakingUp(false);
+};  
+
+  useEffect(() => {
+    checkBackend();
+  }, []);
+
+  useEffect(() => {
+  if (backendStatus === "unreachable") {
+    const interval = setInterval(checkBackend, 5000);
+    return () => clearInterval(interval);
+  }
+}, [backendStatus]);
 
   const filteredHomes = (properties || []).filter((home) => {
     let parsed = {};
@@ -94,10 +141,39 @@ useEffect(() => {
   };
 
   return (
+
     // <div className="min-h-screen mt-10 bg-gradient-to-b from-blue-50 to-white px-4 flex flex-col">
 
-    <div className={`min-h-screen mt-10 bg-gradient-to-b from-blue-50 to-white px-4 flex flex-col transition-all duration-700 ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-      }`}>
+    <div className={`min-h-screen mt-10 bg-gradient-to-b from-blue-50 to-white px-4 flex flex-col transition-all duration-700 
+      ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
+
+      {backendStatus === "unreachable" && (
+        <div className="bg-yellow-50 text-purple-600 p-3 mt-8 rounded-lg text-center mb-4">
+          ⏳ Server is currently unavailable. Attempting to reconnect.....
+
+          <button
+            onClick={checkBackend}
+            disabled={wakingUp}
+            className="ml-3 mt-4 px-3 py-1 bg-yellow-200 border border-pink-600 text-gray-800 font-semibold rounded-lg hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            {wakingUp ? "⏳ Connecting to server…" : "Reconnect Now"}
+          </button>
+
+          {backendStatus === "unreachable" && !wakingUp && (
+            <p className="text-sm mt-4 text-red-500 mt-2">
+              ⚠️ Backend service is currently unreachable
+            </p>
+          )}
+        </div>
+      )}
+
+
+      {backendStatus === "running" && (
+        <p className="text-green-600 text-center mb-2">
+          ✅ Server is running
+        </p>
+      )}
+
 
       {/* SEARCH BAR */}
       <section className="mt-10 max-w-xl mx-auto animate-slideUp w-full">
@@ -114,26 +190,26 @@ useEffect(() => {
       {search && (
         <section className="mt-10 max-w-3xl mx-auto w-full">
 
-        {searchLoading ? (
-  <div className="space-y-4 mt-6 skeleton rounded">
-    {[1, 2, 3].map((_, index) => (
-      <div
-        key={index}
-        className="bg-white rounded-xl p-4 shadow border flex gap-4 animate-pulse"
-      >
-        {/* IMAGE SKELETON */}
-        <div className="w-32 h-24 bg-gray-200 rounded-lg"></div>
+          {searchLoading ? (
+            <div className="space-y-4 mt-6 skeleton rounded">
+              {[1, 2, 3].map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl p-4 shadow border flex gap-4 animate-pulse"
+                >
+                  {/* IMAGE SKELETON */}
+                  <div className="w-32 h-24 bg-gray-200 rounded-lg"></div>
 
-        {/* TEXT SKELETON */}
-        <div className="flex-1 space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-          <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/3 mt-2"></div>
-        </div>
-      </div>
-    ))}
-  </div>
+                  {/* TEXT SKELETON */}
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/3 mt-2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
 
             <>
@@ -288,46 +364,46 @@ useEffect(() => {
 
 
 
-{/* LOADING CARD */}
-{loading && (
-  <div className="flex justify-center mt-4">
-    <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl px-6 py-5 border flex flex-col items-center gap-3 animate-fadeUp w-full max-w-sm">
-      
-      {/* Animated Loader */}
-      <div className="flex gap-2">
-        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
-        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-      </div>
+        {/* LOADING CARD */}
+        {loading && (
+          <div className="flex justify-center mt-4">
+            <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl px-6 py-5 border flex flex-col items-center gap-3 animate-fadeUp w-full max-w-sm">
 
-      {/* Text */}
-      <p className="text-sm text-gray-700 font-medium text-center">
-        Finding the best homes for you...
-      </p>
+              {/* Animated Loader */}
+              <div className="flex gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+              </div>
 
-      {/* Sub text */}
-      <span className="text-xs text-gray-500">
-        This will only take a moment ✨
-      </span>
+              {/* Text */}
+              <p className="text-sm text-gray-700 font-medium text-center">
+                Finding the best homes for you...
+              </p>
 
-    </div>
-  </div>
-)}
-
-
-      {/* EMPTY CARD */}
-      {properties.length === 0 && !loading && (
-        <div className="flex justify-center mt-6">
-          <div className="bg-white shadow-lg rounded-xl px-6 py-4 text-center animate-fadeUp border w-full max-w-md">
-            <p className="text-gray-500 text-sm">
-              📭 No properties available yet <br />
-              <span className="text-green-600 w-full font-medium">
-                Be the first to post!
+              {/* Sub text */}
+              <span className="text-xs text-gray-500">
+                This will only take a moment ✨
               </span>
-            </p>
+
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+
+        {/* EMPTY CARD */}
+        {properties.length === 0 && !loading && (
+          <div className="flex justify-center mt-6">
+            <div className="bg-white shadow-lg rounded-xl px-6 py-4 text-center animate-fadeUp border w-full max-w-md">
+              <p className="text-gray-500 text-sm">
+                📭 No properties available yet <br />
+                <span className="text-green-600 w-full font-medium">
+                  Be the first to post!
+                </span>
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {properties.slice(0, 6).map((home) => {
@@ -373,7 +449,7 @@ useEffect(() => {
             <span className="step">1</span>
             <h3>📤 Owner Uploads Property</h3>
             <p>Property owner uploads details & media.</p>
-                <strong className="text-green-600">✔ Trusted by 100+ users <br /></strong>
+            <strong className="text-green-600">✔ Trusted by 100+ users <br /></strong>
           </div>
 
           <div className="card animate-fadeInDelay2">
@@ -387,7 +463,7 @@ useEffect(() => {
             <span className="step">3</span>
             <h3>🏠 Tenant Scans & Views</h3>
             <p>Tenant scans QR to view full details.</p>
-             <strong className="text-green-600">✔ Direct Owner Contact <br /></strong>
+            <strong className="text-green-600">✔ Direct Owner Contact <br /></strong>
           </div>
         </div>
       </section>

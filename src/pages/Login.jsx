@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../utils/config";
 
-// const fetchWithTimeout = (url, options, timeout = 6000) => {
-//   return Promise.race([
-//     fetch(url, options),
-//     new Promise((_, reject) =>
-//       setTimeout(() => reject(new Error("Server timeout")), timeout)
-//     ),
-//   ]);
-// };
+const fetchWithTimeout = (url, options, timeout = 6000) => {
+  return Promise.race([
+    fetch(url, options),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("TIMEOUT")), timeout)
+    ),
+  ]);
+};
 
 export default function Login() {
   const navigate = useNavigate();
@@ -26,25 +26,27 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState("");
   const [resendCount, setResendCount] = useState(0);
   const [loadingText, setLoadingText] = useState("Logging in...");
-const [dots, setDots] = useState("");
+  const [dots, setDots] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [shake, setShake] = useState(false);
 
-useEffect(() => {
-  if (linkLoading) {
-    const interval = setInterval(() => {
-      setDots((prev) => (prev.length === 3 ? "" : prev + "."));
-    }, 400);
+  useEffect(() => {
+    if (linkLoading) {
+      const interval = setInterval(() => {
+        setDots((prev) => (prev.length === 3 ? "" : prev + "."));
+      }, 400);
 
-    return () => clearInterval(interval);
-  } else {
-    setDots("");
-  }
-}, [linkLoading]);
+      return () => clearInterval(interval);
+    } else {
+      setDots("");
+    }
+  }, [linkLoading]);
 
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => {
         setTimer((prev) => prev - 1);
-      }, 1000);
+      }, 10000);
 
       return () => clearInterval(interval);
     }
@@ -57,12 +59,17 @@ useEffect(() => {
     e.preventDefault();
 
     if (!mobile || !password) {
-      setError("Please enter mobile and password");
+      setError("⚠️ Please enter mobile and password");
+      return;
+    }
+
+    if (!/^[0-9]{10}$/.test(mobile)) {
+      setError("📱 Mobile number must be 10 digits");
       return;
     }
 
     if (!navigator.onLine) {
-      setError("❌ No internet connection");
+      setError("🌐 No internet connection");
       return;
     }
 
@@ -76,36 +83,55 @@ useEffect(() => {
 
     try {
 
-      // Step 1: Connecting
-      setLoadingText("Connecting to server...");
+      setLoadingText("🌐 Connecting to server...");
+      setTimeout(() => setLoadingText("🔐 Verifying credentials..."), 800);
+      setTimeout(() => setLoadingText("🚀 Logging you in..."), 1500);
 
-      // Step 2: Logging in
-      setLoadingText("Logging in...");
+      const res = await fetchWithTimeout(
+        `${API_BASE_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ mobile, password }),
+        },
+        10000   // ✅ 10 sec max
+      );
 
-      // const res = await fetchWithTimeout(
-      //   `${API_BASE_URL}/api/auth/login`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({ mobile, password }),
+      // const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
       //   },
-      //   1000
-      // );
-
-    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ mobile, password }),
-});
+      //   body: JSON.stringify({ mobile, password }),
+      // });
 
       if (!res.ok) {
-        setError("Invalid mobile or password");
+        const text = await res.text();
+
+        switch (text) {
+          case "MOBILE_NOT_FOUND":
+            setError("❌ Mobile not registered");
+            break;
+
+          case "WRONG_PASSWORD":
+            setError("🔒 Incorrect password");
+            break;
+
+          case "ACCOUNT_BLOCKED":
+            setError("⚠️ Account blocked. Contact support");
+            break;
+
+          case "TOO_MANY_ATTEMPTS":
+            setError("⚠️ Too many attempts. Try later");
+            break;
+
+          default:
+            setError("❌ Unable to login. Please try again");
+        }
+
         setLoading(false);
-        // clearTimeout(failSafe);
         return;
       }
 
@@ -124,35 +150,48 @@ useEffect(() => {
       setTimeout(() => {
         setLoading(false);
         // clearTimeout(failSafe);
-        
-       const role = data.role?.toUpperCase();
 
-localStorage.setItem("role", role);
+        const role = data.role?.toUpperCase();
 
-if (role === "ADMIN") {
-  navigate("/admin");
-} else if (role === "OWNER") {
-  navigate("/owner/dashboard");
-} else {
-  navigate("/user/dashboard");
-}
+        localStorage.setItem("role", role);
+
+        if (role === "ADMIN") {
+          navigate("/admin");
+        } else if (role === "OWNER") {
+          navigate("/owner/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
       }, 800);
 
-    } catch (err) {
+    }
+    catch (err) {
       console.error(err);
 
       if (!navigator.onLine) {
-        setError("❌ No internet connection");
-      } else if (err.message === "Server timeout") {
-        setError("⏳ Server not responding");
-      } else {
-        setError("❌ Backend server not running");
+        setError("🌐 No internet connection");
+      }
+      else if (err.message === "TIMEOUT") {
+        setError("⏳ Server is waking up... please wait");
+      }
+      else if (err.message.includes("Failed to fetch")) {
+        setError("🔥 Server is down. Try again later");
+      }
+      else {
+        setError("❌ Something went wrong");
       }
 
       setLoading(false);
-      // clearTimeout(failSafe);
     }
+
   };
+
+  useEffect(() => {
+    if (error) {
+      const t = setTimeout(() => setError(""), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [error]);
 
   /* ================= EMAIL OTP LOGIN (DEMO) ================= */
   const sendMagicLink = async () => {
@@ -167,6 +206,16 @@ if (role === "ADMIN") {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      setErrorMsg("❌ Please enter valid email");
+      setShake(true);
+
+      setTimeout(() => setShake(false), 400);
+      return;
+    }
+
     setLinkLoading(true);
     setErrorMsg("");
     setSuccessMsg("");
@@ -175,61 +224,97 @@ if (role === "ADMIN") {
 
       console.log("Sending request to:", `${API_BASE_URL}/api/auth/send-magic-link`);
 
-      // const res = await fetchWithTimeout(
-      //   `${API_BASE_URL}/api/auth/send-magic-link`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({ email }),
+      const res = await fetchWithTimeout(
+        `${API_BASE_URL}/api/auth/send-magic-link`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        },
+        15000   // ✅ 3 sec max
+      );
+
+
+      // const res = await fetch(`${API_BASE_URL}/api/auth/send-magic-link`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
       //   },
-      //   15000   // ✅ 3 sec max
-      // );
+      //   body: JSON.stringify({ email }),
+      // });
 
+      const data = await res.json();
 
-      const res = await fetch(`${API_BASE_URL}/api/auth/send-magic-link`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ email }),
-});
+      if (!res.ok) {
+        if (data.message === "EMAIL_NOT_FOUND") {
+          throw new Error("❌ Email not registered");
+        } else {
+          throw new Error(data.message || "Server error");
+        }
+      }
 
-    const data = await res.json();
-
-if (!res.ok) {
-  throw new Error(data.message || "Server error");
-}
-
-if (!data.success) {
-  throw new Error(data.message || "Operation failed");
-}
+      if (!data.success) {
+        throw new Error(data.message || "Operation failed");
+      }
 
       setSuccessMsg(`✅ Magic link sent to ${email}`);
       setTimer(30);
 
-    } catch (err) {
-
+    } 
+    catch (err) {
   console.error("FULL ERROR:", err);
 
-  if (err.message) {
-    setErrorMsg("❌ " + err.message);
-  } else {
-    setErrorMsg("❌ Unknown error occurred");
+  if (!navigator.onLine) {
+    setErrorMsg("🌐 No internet connection");
+  } 
+  else if (err.message === "TIMEOUT") {
+    setErrorMsg("⏳ Server is waking up... please wait");
+  } 
+  else if (err.message.includes("Failed to fetch")) {
+    setErrorMsg("🔥 Backend server is not running");
+  } 
+  else if (err.message.includes("NetworkError")) {
+    setErrorMsg("🌐 Network error occurred");
+  } 
+  else {
+    setErrorMsg("❌ Unable to send magic link. Try again");
   }
-      
-      // if (err.message.includes("not registered")) {
-      //   setErrorMsg("❌ Email not registered");
-      // }
 
     } finally {
       setLinkLoading(false); // ✅ ALWAYS RESET BUTTON
     }
   };
 
+
+
   return (
     <>
+
+      <style>
+        {`
+      @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+      }
+      `}
+      </style>
+
+      {linkLoading && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
+          <div className="bg-white p-6 rounded-xl flex items-center gap-3 shadow-lg">
+            <div className="w-6 h-6 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="font-semibold text-gray-700">
+              Sending magic link...
+            </span>
+          </div>
+        </div>
+      )}
+
       {loading && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
           <div className="bg-white p-6 rounded-xl flex items-center gap-3 shadow-lg">
@@ -290,7 +375,7 @@ if (!data.success) {
             <form onSubmit={handlePasswordLogin} className="mt-6 space-y-4">
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium mb-2 text-gray-700">
                   Mobile Number
                 </label>
                 <input
@@ -302,17 +387,24 @@ if (!data.success) {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="relative">
+                <label className="block text-sm font-medium mb-2 text-gray-700">
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-2/2 text-sm rounded-lg border border-yellow-400 px-3 py-1 text-black bg-yellow-50 font-semibold"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
               </div>
 
               {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -339,24 +431,43 @@ if (!data.success) {
                 <label className="block text-sm font-medium mb-2 text-gray-700">
                   Registered Email
                 </label>
-                <input
-                  type="email"
-                  placeholder="Enter email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-5 py-3 rounded-xl border focus:ring-1 focus:ring-blue-500"
-                />
+                <div
+                  className="relative"
+                  style={{
+                    animation: shake ? "shake 0.3s" : "none"
+                  }}
+                >
+                  <input
+                    type="email"
+                    placeholder="Enter email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-5 py-3 rounded-xl border focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
               </div>
 
               <button
                 onClick={sendMagicLink}
-                disabled={linkLoading || timer > 0 || !email}
+                disabled={linkLoading || timer > 0}
                 className={`w-full py-3 rounded-xl text-white font-semibold transition duration-300
-    ${linkLoading ? "bg-green-600" : "bg-blue-600 hover:bg-blue-700"}
-  `}
+                ${linkLoading ? "bg-green-600" : "bg-blue-600 hover:bg-blue-700"}
+               `}
               >
-                {linkLoading ? "Sending... Please wait ⏳" : "Send Magic Link"}
+                Send Magic Link
               </button>
+
+{errorMsg && (
+  <div className="text-center">
+    <p className="text-red-500">{errorMsg}</p>
+    <button
+      onClick={sendMagicLink}
+      className="text-blue-600 underline text-sm mt-1"
+    >
+      Retry
+    </button>
+  </div>
+)}
 
               {timer === 0 && resendCount > 0 && resendCount < 3 && (
                 <p className="text-sm text-green-600 text-center mt-2">
@@ -377,11 +488,11 @@ if (!data.success) {
                 </p>
               )}
 
-              {errorMsg && (
+              {/* {errorMsg && (
                 <p className="text-red-500 text-sm mt-2 text-center">
                   {errorMsg}
                 </p>
-              )}
+              )} */}
 
               {error && <p className="text-red-500 text-sm">{error}</p>}
 
