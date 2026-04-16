@@ -50,8 +50,8 @@ export default function Home() {
 
     const startTime = Date.now();
 
-    fetch(`${API_BASE_URL}/api/forms/all`)
-      .then(res => res.json())
+    fetch(`${API_BASE_URL}/api/auth/ping`)
+      .then(res => res.text())
       .then(data => setProperties(data || []))
       .catch(err => {
         console.error(err);
@@ -83,7 +83,7 @@ const checkBackend = async () => {
 
   try {
     const res = await fetchWithTimeout(
-      `${API_BASE_URL}/auth/ping`,
+      `${API_BASE_URL}/api/auth/ping`,
       {},
       5000
     );
